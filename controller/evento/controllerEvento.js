@@ -1,35 +1,40 @@
-const DAOevento = require('../../model/DAO/evento/eventoDAO.js')
-const DAOeventoCategoria = require('../../model/DAO/evento/eventoCategoriaDAO.js')
-const DAOeventoParticipante = require('../../model/DAO/evento/participarEvento.js')
-const controllerEventoCategoria = require('../../controller/evento/controllerEventoCategoria.js')
-const controllerUsuario = require('../../controller/usuario/controllerUsuario.js')
+const DAOevento=require('../../model/DAO/evento/eventoDAO.js')
+const DAOeventoCategoria = require ('../../model/DAO/evento/eventoCategoriaDAO.js')
+const DAOeventoParticipante = require ('../../model/DAO/evento/participarEvento.js')
+
+const controllerEventoCategoria = require ('../../controller/evento/controllerEventoCategoria.js')
+const controllerUsuario=require('../../controller/usuario/controllerUsuario.js')
 const controllerParticipante = require('./controllerParticiparEvento.js')
-const eventoEstadoDAO = require('../../model/DAO/evento/eventoEstado.js')
-const message = require('../../modulo/config.js')
+
+const message =require('../../modulo/config.js')
 
 const inserirEvento = async (evento, contentType) => {
+    
     try {
         if (contentType && contentType.includes('application/json')) {
-            let dados = {}
+            dados={}
             if (
-                evento.titulo == '' || evento.titulo == undefined || evento.titulo == null || evento.titulo.length > 100 ||
-                evento.descricao == '' || evento.descricao == undefined || evento.descricao == null || evento.descricao.length > 60 ||
-                evento.data_evento == '' || evento.data_evento == undefined || evento.data_evento == null || evento.data_evento.length > 20 ||
-                evento.horario == '' || evento.horario == undefined || evento.horario == null || evento.horario.length > 15 ||
-                evento.local == '' || evento.local == undefined || evento.local == null || evento.local.length > 70 ||
-                evento.imagem == '' || evento.imagem == undefined || evento.imagem == null || evento.imagem.length > 500 ||
-                evento.limite_participante == '' || evento.limite_participante == undefined || evento.limite_participante == null ||
-                evento.valor_ingresso == '' || evento.valor_ingresso == undefined || evento.valor_ingresso == null ||
-                evento.id_usuario == '' || evento.id_usuario == undefined || evento.id_usuario == null ||
-                evento.id_estado == '' || evento.id_estado == undefined || evento.id_estado == null
+                evento.titulo == ''              || evento.titulo == undefined               || evento.titulo == null              || evento.titulo.length > 100    ||
+                evento.descricao == ''           || evento.descricao == undefined            || evento.descricao == null           || evento.descricao.length > 60  ||
+                evento.data_evento == ''         || evento.data_evento == undefined          || evento.data_evento == null         || evento.data_evento.length > 20||
+                evento.horario == ''             || evento.horario == undefined              || evento.horario == null             || evento.horario.length > 15    ||
+                evento.local == ''               || evento.local == undefined                || evento.local == null               || evento.local.length > 70      ||
+                evento.imagem == ''              || evento.imagem == undefined               || evento.imagem == null              || evento.imagem.length > 500    ||
+                evento.limite_participante == '' || evento.limite_participante == undefined  || evento.limite_participante == null ||
+                evento.valor_ingresso == ''      || evento.valor_ingresso == undefined       || evento.valor_ingresso == null      ||
+                evento.id_usuario == ''          || evento.id_usuario == undefined           || evento.id_usuario == null          || 
+                evento.id_estado == ''          || evento.id_estado == undefined           || evento.id_estado == null
             ) {
+
                 return message.ERROR_REQUIRED_FIELDS
-            } else {
+            }else{
                 let result = await DAOevento.inserirEvento(evento)
                 if (result) {
                     if (evento.categoria && Array.isArray(evento.categoria)) {
                         let eventoInserido = await DAOevento.selectLastId()
-                        let idEvento = eventoInserido[0].id_evento
+                        //Pegando o ultimo id inserido
+                        let idEvento = eventoInserido[0].id_evento //vendo se volta id
+
                         for (let categoria of evento.categoria) {
                             if (categoria.id_categoria && !isNaN(categoria.id_categoria)) {
                                 let eventoCategoria = {
@@ -42,30 +47,34 @@ const inserirEvento = async (evento, contentType) => {
                     }
                     if (evento.participante && Array.isArray(evento.participante)) {
                         let eventoInserido = await DAOevento.selectLastId()
-                        let idEvento = eventoInserido[0].id_evento
+                        //Pegando o ultimo id inserido
+                        let idEvento = eventoInserido[0].id_evento //vendo se volta id
+
                         for (let participante of evento.participante) {
                             if (participante.id_usuario && !isNaN(participante.id_usuario)) {
                                 let eventoParticipante = {
                                     id_evento: idEvento,
                                     id_usuario: participante.id_usuario
                                 }
-                                await DAOeventoParticipante.insertParticiparEvento(eventoParticipante)
+                    
+                                await  DAOeventoParticipante.insertParticiparEvento(eventoParticipante)
                             }
                         }
                     }
                     let lastid = await DAOevento.selectLastId()
-                    dados = {
-                        status: true,
-                        status_code: 200,
-                        eventoID: lastid,
-                        evento: evento
+                    dados={
+                        status:true,
+                        status_code:200,
+                        eventoID:lastid,
+                        evento:evento
                     }
                     return dados
-                } else {
+                    
+                }else{
                     return message.ERROR_INTERNAL_SERVER_MODEL
                 }
             }
-        } else {
+        }else{
             return message.ERROR_CONTENT_TYPE
         }
     } catch (error) {
@@ -79,26 +88,32 @@ const atualizarEvento = async (id, evento, contentType) => {
         if (contentType == 'application/json') {
             if (
                 evento.titulo == '' || evento.titulo == undefined || evento.titulo == null || evento.titulo.length > 100 ||
-                evento.descricao == '' || evento.descricao == undefined || evento.descricao == null || evento.descricao.length > 60 ||
+                evento.descricao == '' || evento.descricao == undefined || evento.descricao == null || evento.descricao.length > 10000000 ||
                 evento.data_evento == '' || evento.data_evento == undefined || evento.data_evento == null || evento.data_evento.length > 20 ||
                 evento.horario == '' || evento.horario == undefined || evento.horario == null || evento.horario.length > 15 ||
                 evento.local == '' || evento.local == undefined || evento.local == null || evento.local.length > 70 ||
                 evento.imagem == '' || evento.imagem == undefined || evento.imagem == null || evento.imagem.length > 500 ||
                 evento.limite_participante == '' || evento.limite_participante == undefined || evento.limite_participante == null ||
                 evento.valor_ingresso == '' || evento.valor_ingresso == undefined || evento.valor_ingresso == null ||
-                evento.id_usuario == '' || evento.id_usuario == undefined || evento.id_usuario == null ||
-                evento.id_estado == '' || evento.id_estado == undefined || evento.id_estado == null
+                evento.id_usuario == '' || evento.id_usuario == undefined || evento.id_usuario == null ||  evento.id_estado == ''          || evento.id_estado == undefined           || evento.id_estado == null
             ) {
+
                 return message.ERROR_REQUIRED_FIELDS
             }
-            let result = await DAOevento.selectEventoById(id)
-            if (result && result.length > 0) {
-                evento.id = parseInt(id)
-                let update = await DAOevento.updateEvento(evento)
-                if (update) {
-                    if (evento.categoria && Array.isArray(evento.categoria)) {
+            let result=await DAOevento.selectEventoById(id)
+            if (result != false || typeof(result)== 'object') {
+                if (result.length>0) {
+                    evento.id=parseInt(id)
+
+                    let result = await DAOevento.updateEvento(evento)
+                    
+
+                    if (result) {
+                        if (evento.categoria && Array.isArray(evento.categoria)) {
                         let eventoInserido = await DAOevento.selectLastId()
-                        let idEvento = eventoInserido[0].id_evento
+                        //Pegando o ultimo id inserido
+                        let idEvento = eventoInserido[0].id_evento //vendo se volta id
+
                         for (let categoria of evento.categoria) {
                             if (categoria.id_categoria && !isNaN(categoria.id_categoria)) {
                                 let eventoCategoria = {
@@ -111,121 +126,177 @@ const atualizarEvento = async (id, evento, contentType) => {
                     }
                     if (evento.participante && Array.isArray(evento.participante)) {
                         let eventoInserido = await DAOevento.selectLastId()
-                        let idEvento = eventoInserido[0].id_evento
+                        //Pegando o ultimo id inserido
+                        let idEvento = eventoInserido[0].id_evento //vendo se volta id
+
                         for (let participante of evento.participante) {
                             if (participante.id_usuario && !isNaN(participante.id_usuario)) {
                                 let eventoParticipante = {
                                     id_evento: idEvento,
                                     id_usuario: participante.id_usuario
                                 }
-                                await DAOeventoParticipante.updateParticiparEvento(eventoParticipante)
+                    
+                                await  DAOeventoParticipante.updateParticiparEvento(eventoParticipante)
                             }
                         }
                     }
                     delete evento.id
-                    return {
-                        status: true,
-                        status_code: 200,
-                        evento: evento
+                    dados={
+                        status:true,
+                        status_code:200,
+                        evento:evento
                     }
-                } else {
-                    return message.ERROR_INTERNAL_SERVER_MODEL
+                    return dados
+                    }else{
+                        return message.ERROR_INTERNAL_SERVER_MODEL
+                    }
+                }else{
+                    return message.ERROR_NOT_FOUND
                 }
-            } else {
-                return message.ERROR_NOT_FOUND
+            }else{
+                return message.ERROR_INTERNAL_SERVER_MODEL
             }
-        } else {
+        }else{
             return message.ERROR_CONTENT_TYPE
         }
     } catch (error) {
-        console.log(error)
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+       console.log(error)
+       return message.ERROR_INTERNAL_SERVER_CONTROLLER 
     }
 }
 
-const excluirEvento = async function (id) {
+const excluirEvento = async function (id){
     try {
-        if (id == '' || id == undefined || id == null || isNaN(id) || id <= 0) {
-            return message.ERROR_REQUIRED_FIELDS
-        } else {
+        if(id == '' || id == undefined || id == null || isNaN(id) || id <= 0){
+            return message.ERROR_REQUIRED_FIELDS //400
+        }else{
+
+            //função que verifica se ID existe no BD
             let results = await DAOevento.selectEventoById(parseInt(id))
-            if (results && results.length > 0) {
-                let result = await DAOevento.deleteEvento(parseInt(id))
-                return result ? message.SUCCESS_DELETED_ITEM : message.ERROR_INTERNAL_SERVER_MODEL
-            } else {
-                return message.ERROR_NOT_FOUND
+
+            if(results != false || typeof(results) == 'object'){
+                //se exestir, faremos o delete
+                if(results.length > 0){
+                    //delete    
+                    let result = await DAOevento.deleteEvento(parseInt(id))
+
+                    if(result){
+                        return message.SUCCESS_DELETED_ITEM
+                    }else{
+                        return message.ERROR_INTERNAL_SERVER_MODEL
+                    }
+                }else{
+                    return message.ERROR_NOT_FOUND
+                }
+                
+            }else{
+                return message.ERROR_INTERNAL_SERVER_MODEL
             }
         }
-    } catch (error) {
+    } catch (error) {        
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 }
 
 const listarEvento = async function () {
     try {
-        let arrayEventos = []
-        let dados = {}
-        let result = await eventoEstadoDAO.selectEventosComEstado()
+        let arrayEventos=[]
+        let dados={}
+        let result = await DAOevento.selectAllEvento()
+        
+        if (result != false || typeof(result)=='object') {
+        
+            if(result.length>0){
+                dados.status=true
+                dados.status_code=200,
+                dados.itens=result.length
+                dados.eventos=result
 
-        if (result && result.length > 0) {
-            for (const itemEvento of result) {
-                let dadosUsuario = await controllerParticipante.buscarUsuario(itemEvento.id_usuario)
-                itemEvento.usuario = dadosUsuario.usuario
-                delete itemEvento.id_usuario
+                for (const itemEvento of result) {
+                    /* Monta o objeto da classificação para retornar no Filme (1XN) */
+                    //Busca os dados da classificação na controller de classificacao
+                    let dadosUsuario = await controllerParticipante.buscarUsuario(itemEvento.id_usuario)
+                    //Adiciona um atributo classificação no JSON de filmes e coloca os dados da classificação
+                    itemEvento.usuario = dadosUsuario.usuario
+                    //Remover um atributo do JSON
+                    delete itemEvento.id_usuario
+                    
+                    let dadosCategoria = await controllerEventoCategoria.buscarCategoriaPorEvento(itemEvento.id_evento)
+                    itemEvento.categoria = dadosCategoria.categoria
+                
+                    //delete itemFilme.id_genero
+                    let dadosParticipante = await controllerParticipante.buscarUsuarioPorEvento(itemEvento.id_evento)
+                    itemEvento.participante = dadosParticipante.usuario
+                    
+                    
 
-                let dadosCategoria = await controllerEventoCategoria.buscarCategoriaPorEvento(itemEvento.id_evento)
-                itemEvento.categoria = dadosCategoria.categoria
+                    arrayEventos.push(itemEvento)
+                }
+                
+                dados.eventos = arrayEventos
 
-                let dadosParticipante = await controllerParticipante.buscarUsuarioPorEvento(itemEvento.id_evento)
-                itemEvento.participante = dadosParticipante.usuario
-
-                arrayEventos.push(itemEvento)
+                return dados
+            }else{
+                return message.ERROR_NOT_FOUND
             }
-
-            dados.status = true
-            dados.status_code = 200
-            dados.itens = arrayEventos.length
-            dados.eventos = arrayEventos
-            return dados
-        } else {
-            return message.ERROR_NOT_FOUND
+        }else{
+            return message.ERROR_INTERNAL_SERVER_MODEL
         }
+        //cha,a a funcao para retornarusuarios cadastrados
     } catch (error) {
         console.log(error)
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER ///500
     }
 }
 
 const buscarEvento = async function (id) {
-    let dados = {}
-    let arrayEventos = []
+    let dados={}
+    let arrayEventos =[]
     try {
-        if (id == '' || id == undefined || id == null || id < 0) {
-            return message.ERROR_REQUIRED_FIELDS
-        } else {
+        if (id == ''|| id == undefined|| id == null|| id<0 
+        ) {
+            return message.ERROR_REQUIRED_FIELDS //400
+        }else{
             let result = await DAOevento.selectEventoById(id)
-            if (result && result.length > 0) {
-                for (const itemEvento of result) {
-                    let dadosUsuario = await controllerParticipante.buscarUsuario(itemEvento.id_usuario)
-                    itemEvento.usuario = dadosUsuario.usuario
-                    delete itemEvento.id_usuario
+            if (result != false || typeof(result)=='object'){
+                if (result.length>0) {
+                    if(result.length>0){
+                        dados.status=true
+                        dados.status_code=200,
+                        dados.itens=result.length
+                        dados.eventos=result
 
-                    let dadosCategoria = await controllerEventoCategoria.buscarCategoriaPorEvento(itemEvento.id_evento)
-                    itemEvento.categoria = dadosCategoria.categoria
+                        for (const itemEvento of result) {
+                            /* Monta o objeto da classificação para retornar no Filme (1XN) */
+                            //Busca os dados da classificação na controller de classificacao
+                            let dadosUsuario = await controllerParticipante.buscarUsuario(itemEvento.id_usuario)
+                            //Adiciona um atributo classificação no JSON de filmes e coloca os dados da classificação
+                            itemEvento.usuario = dadosUsuario.usuario
+                            //Remover um atributo do JSON
+                            delete itemEvento.id_usuario
+                            
+                            let dadosCategoria = await controllerEventoCategoria.buscarCategoriaPorEvento(itemEvento.id_evento)
+                            itemEvento.categoria = dadosCategoria.categoria
+                        
+                            //delete itemFilme.id_genero
+                            let dadosParticipante = await controllerParticipante.buscarUsuarioPorEvento(itemEvento.id_evento)
+                            itemEvento.participante = dadosParticipante.usuario
+                            
+                            
 
-                    let dadosParticipante = await controllerParticipante.buscarUsuarioPorEvento(itemEvento.id_evento)
-                    itemEvento.participante = dadosParticipante.usuario
+                            arrayEventos.push(itemEvento)
+                        }
+                        
+                        dados.eventos = arrayEventos
 
-                    arrayEventos.push(itemEvento)
+                        return dados
+                    }
+
+                }else{
+                    return message.ERROR_NOT_FOUND//404
                 }
-
-                dados.status = true
-                dados.status_code = 200
-                dados.itens = arrayEventos.length
-                dados.eventos = arrayEventos
-                return dados
-            } else {
-                return message.ERROR_NOT_FOUND
+            }else{
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
         }
     } catch (error) {
@@ -234,7 +305,7 @@ const buscarEvento = async function (id) {
     }
 }
 
-module.exports = {
+module.exports={
     inserirEvento,
     atualizarEvento,
     excluirEvento,

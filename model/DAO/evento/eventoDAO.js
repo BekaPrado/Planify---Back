@@ -72,18 +72,18 @@ const updateEvento = async (dados) => {
 };
 
 
-const deleteEvento = async function(id){
+const deleteEvento = async function(id) {
     try {
-        let sql = `delete from tbl_evento where id = ${id}`
+        // Primeiro, remove as participações relacionadas ao evento
+        await prisma.$executeRawUnsafe(`DELETE FROM tbl_participar_evento WHERE id_evento = ${id}`);
 
-        let result = await prisma.$executeRawUnsafe(sql)
+        // Depois, remove o evento em si
+        const result = await prisma.$executeRawUnsafe(`DELETE FROM tbl_evento WHERE id_evento = ${id}`);
 
-        if (result)
-            return true
-        else 
-            return false
+        return result > 0;
     } catch (error) {
-        return false
+        console.log(error);
+        return false;
     }
 }
 

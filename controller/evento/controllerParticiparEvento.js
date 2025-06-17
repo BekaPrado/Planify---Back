@@ -27,7 +27,32 @@ const inserirParticiparEvento = async function (participarEvento, contentType) {
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
     }
 }
-
+const excluirParticipanteEvento = async function (participarEvento, contentType) {
+    try {
+        if (String(contentType).toLowerCase() == 'application/json') {
+            if (
+                participarEvento.id_evento == '' || participarEvento.id_evento == undefined || participarEvento.id_evento == null || isNaN(participarEvento.id_evento) || participarEvento.id_evento <= 0 ||
+                participarEvento.id_usuario == '' || participarEvento.id_usuario == undefined || participarEvento.id_usuario == null || isNaN(participarEvento.id_usuario) || participarEvento.id_usuario <= 0
+            ) {
+                return message.ERROR_REQUIRED_FIELDS //400
+                
+            } else {
+                //Chama a função para inserir no BD e aguarda o retorno da função
+                let resultUsuario = await participarEventoDAO.deleteEventoPorUsuario(participarEvento)
+                
+                if (resultUsuario)
+                    return message.SUCESS_CREATED_ITEM //201
+                else
+                    return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+        } else {
+            return message.ERROR_CONTENT_TYPE //415
+        }
+    } catch (error) {
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
+    }
+}
 const atualizarParticiparEvento = async function (id, participarEvento, contentType) {
     try {
         if (String(contentType).toLowerCase() == 'application/json') {
@@ -257,5 +282,6 @@ module.exports = {
     buscarParticiparEvento,
     buscarUsuarioPorEvento,
     buscarEventoPorUsuario,
-    buscarUsuario
+    buscarUsuario,
+    excluirParticipanteEvento
 } 
